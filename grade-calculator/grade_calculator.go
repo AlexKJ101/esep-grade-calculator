@@ -1,9 +1,7 @@
 package esepunittests
 
 type GradeCalculator struct {
-	assignments []Grade
-	exams       []Grade
-	essays      []Grade
+	grades []Grade
 }
 
 type GradeType int
@@ -32,9 +30,7 @@ type Grade struct {
 
 func NewGradeCalculator() *GradeCalculator {
 	return &GradeCalculator{
-		assignments: make([]Grade, 0),
-		exams:       make([]Grade, 0),
-		essays:      make([]Grade, 0),
+		grades: make([]Grade, 0),
 	}
 }
 
@@ -55,36 +51,35 @@ func (gc *GradeCalculator) GetFinalGrade() string {
 }
 
 func (gc *GradeCalculator) AddGrade(name string, grade int, gradeType GradeType) {
-	switch gradeType {
-	case Assignment:
-		gc.assignments = append(gc.assignments, Grade{
-			Name:  name,
-			Grade: grade,
-			Type:  Assignment,
-		})
-	case Exam:
-		gc.exams = append(gc.exams, Grade{
-			Name:  name,
-			Grade: grade,
-			Type:  Exam,
-		})
-	case Essay:
-		gc.essays = append(gc.essays, Grade{
-			Name:  name,
-			Grade: grade,
-			Type:  Essay,
-		})
+	gc.grades = append(gc.grades, Grade{
+		Name:  name,
+		Grade: grade,
+		Type:  gradeType,
+	})
+}
+
+func filterGradesByType(all []Grade, t GradeType) []Grade {
+	filtered := make([]Grade, 0)
+	for _, g := range all {
+		if g.Type == t {
+			filtered = append(filtered, g)
+		}
 	}
+	return filtered
 }
 
 func (gc *GradeCalculator) calculateNumericalGrade() int {
-	assignment_average := computeAverage(gc.assignments)
-	exam_average := computeAverage(gc.exams)
-	essay_average := computeAverage(gc.essays)
+	assignmentGrades := filterGradesByType(gc.grades, Assignment)
+	examGrades := filterGradesByType(gc.grades, Exam)
+	essayGrades := filterGradesByType(gc.grades, Essay)
 
-	weighted_grade := float64(assignment_average)*.5 + float64(exam_average)*.35 + float64(essay_average)*.15
+	assignmentAverage := computeAverage(assignmentGrades)
+	examAverage := computeAverage(examGrades)
+	essayAverage := computeAverage(essayGrades)
 
-	return int(weighted_grade)
+	weightedGrade := float64(assignmentAverage)*0.5 + float64(examAverage)*0.35 + float64(essayAverage)*0.15
+
+	return int(weightedGrade)
 }
 
 func computeAverage(grades []Grade) int {
